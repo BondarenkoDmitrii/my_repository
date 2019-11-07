@@ -1,6 +1,7 @@
 package com.bondarenko;
 
 import java.util.Objects;
+import java.util.Comparator;
 
 import org.joda.time.LocalDate;
 import org.joda.time.Years;
@@ -20,6 +21,24 @@ public class Person {
         this.sex = sex;
         this.id = Math.abs(hashCode());
     }
+
+    public Person(String fio, String birthday, int age, Sex sex, int id) {
+        this.fio = fio;
+        this.birthday = LocalDate.parse(birthday);
+        this.age = age;
+        this.sex = sex;
+        this.id = id;
+    }
+
+    public static Comparator<Person> FioComparator = Comparator.comparing(Person::getFio);
+
+    public static Comparator<Person> BirthdayComparator = Comparator.comparing(Person::getBirthday);
+
+    public static Comparator<Person> AgeComparator = Comparator.comparingInt(Person::getAge);
+
+    public static Comparator<Person> SexComparator = Comparator.comparing(Person::getSex);
+
+    public static Comparator<Person> IdComparator = Comparator.comparingInt(Person::getId);
 
     @Override
     public boolean equals(Object o) {
