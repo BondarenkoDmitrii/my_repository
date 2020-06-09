@@ -1,14 +1,32 @@
 package com.bondarenko;
 
+import com.bondarenko.xml.JaxbWorker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.vsu.lab.repository.IRepository;
+
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
+import java.util.function.Predicate;
 
-public class Repository {
+public class Repository<T> implements IRepository<T>{
 
-    private Person [] array = new Person[10];
+    private static final Logger logger = LoggerFactory.getLogger(
+            JaxbWorker.class);
+
+    private T [] array = (T []) new Object[10];
     private int size = 0;
 
-    public void add(Person person){
+    @Injector()
+    ISorter sorter;
+
+    /**
+     * This method adds a person to the repository
+     * @param person class T instance
+     */
+    @Override
+    public void add(T person){
 
         array[size] = person;
         size++;
@@ -16,32 +34,75 @@ public class Repository {
         if (size == array.length){
             resize();
         }
+        logger.info("Person added");
     }
 
-    public void delete(int pos){
-        for (int i = pos; i < size+1; i++) {
+    @Override
+    public void add(int index, T person){
+        for (int i =size; i >= index; i--){
+            array[i+1] = array[i];
+        }
+        array[index] = person;
+        size++;
+
+        if (size == array.length){
+            resize();
+        }
+        logger.info("Person added in position " + index);
+    }
+
+    @Override
+    public T delete(int index){
+        T temp = array[index];
+        for (int i = index; i < size+1; i++) {
             array[i] = array[i + 1];
         }
         size--;
+        logger.info("Person with index " + index + " deleted");
+        return temp;
     }
 
-    public void outputArray(Person [] array){
+    @Override
+    public T set(int index, T person){
+        T temp = array[index];
+        array[index] = person;
+        logger.info("Person with index " + index + " changed");
+        return temp;
+    }
+
+    @Override
+    public T get(int index){
+        return array[index];
+    }
+
+    @Override
+    public List<T> toList(){
+        ArrayList<T> arrayList = new ArrayList<>();
+        for (int i = 0; i < array.length; i++){
+            if (array[i]!=null){
+            arrayList.add(array[i]);}
+        }
+        logger.info("Array is listed");
+        return arrayList;
+    }
+
+    public void outputArray(T [] array){
         array = arrayOverwrite(array);
-        int size = array.length;
-        for (int i = 0; i < size; i++){
+        for (int i = 0; i < array.length; i++){
             System.out.println(i + " " + array[i].toString());
         }
     }
 
     private void resize() {
-        Person[] tempArray = new Person[array.length + 5];
+       T [] tempArray = (T []) new Object[array.length + 5];
         for (int i = 0; i < array.length; i++) {
             tempArray[i] = array[i];
         }
         array = tempArray;
+        logger.info("Array increased");
     }
 
-    private Person[] arrayOverwrite(Person [] array){
+    public T [] arrayOverwrite(T [] array){
         int index = 0;
         for (int i=0; i < array.length; i++){
             if (array[i] != null){
@@ -51,115 +112,49 @@ public class Repository {
                 i = array.length;
             }
         }
-        Person [] arraySize = new Person[index];
+        T [] arraySize = (T []) new Object[index];
         for (int i=0; i < index; i++){
             arraySize[i] = array[i];
         }
         return arraySize;
     }
 
-    private void quickSort(Person [] array, int low, int high, Comparator<Person> comparator){
-        if (array.length == 0)
-            return;//завершить выполнение если длина массива равна 0
-
-        if (low >= high)
-            return;//завершить выполнение если уже нечего делить
-
-        // выбрать опорный элемент
-        int middleIndex = low + (high - low) / 2;
-        Person middle = array[middleIndex];
-        // разделить на подмассивы, который больше и меньше опорного элемента
-        int i = low, j = high;
-        while (i <= j) {
-            while (comparator.compare(array[i], middle) < 0) {
-                i++;
-            }
-
-            while (comparator.compare(array[j], middle) > 0) {
-                j--;
-            }
-
-            if (i <= j) {//меняем местами
-                Person temp = array[i];
-                array[i] = array[j];
-                array[j] = temp;
-                i++;
-                j--;
-            }
-        }
-
-        // вызов рекурсии для сортировки левой и правой части
-        if (low < j)
-            quickSort(array, low, j, comparator);
-
-        if (high > i)
-            quickSort(array, i, high, comparator);
+    public int getSize(){
+        return size;
     }
 
-    public Person[] sorting(Person [] array, Comparator<Person> comparator){
-        Person [] tempArray = arrayOverwrite(array);
+    @Override
+    public void sortBy(Comparator<T> comparator ){
+        T [] tempArray = arrayOverwrite(array);
         int low = 0;
         int high = tempArray.length - 1;
-        quickSort(tempArray, low, high, comparator);
-        return tempArray;
-    }
 
-    public ArrayList<Person> binarySearch(Person [] array, Person elementToSearch, Comparator<Person> comparator) {
+       // sorter = new QuickSort();
+        sorter.sort(tempArray, low, high, comparator);
 
-        ArrayList<Person> arrayList = new ArrayList<>();
-        int low = 0;
-        int high = array.length - 1;
-
-        // условие прекращения
-        while(low <= high) {
-            int middleIndex = (low + high) / 2;
-            // если средний элемент - целевой элемент, вернуть его индекс
-            if (comparator.compare(array[middleIndex], elementToSearch) == 0) {
-                arrayList.add(array[middleIndex]);
-                int tempMiddle1 = middleIndex+1;
-                int tempMiddle2 = middleIndex-1;
-                if (tempMiddle1 < array.length) {
-                    while (comparator.compare(array[tempMiddle1], elementToSearch) == 0) {
-                        arrayList.add(array[tempMiddle1]);
-                        if (tempMiddle1 == array.length - 1) {
-                            return arrayList;
-                        } else {
-                            tempMiddle1++;
-                        }
-                    }
-                }
-                if (tempMiddle2 >= 0) {
-                    while (comparator.compare(array[tempMiddle2], elementToSearch) == 0) {
-                        arrayList.add(0, array[tempMiddle2]);
-                        if (tempMiddle2 == 0) {
-                            return arrayList;
-                        } else {
-                            tempMiddle2--;
-                        }
-                    }
-                }
-                return arrayList;
-            }
-
-            // если средний элемент меньше
-            // направляем индекс в middle+1, убирая первую часть из рассмотрения
-            else if (comparator.compare(array[middleIndex], elementToSearch) < 0)
-                low = middleIndex + 1;
-
-                // если средний элемент больше
-                // направляем индекс в middle-1, убирая вторую часть из рассмотрения
-            else if (comparator.compare(array[middleIndex], elementToSearch) > 0)
-                high = middleIndex - 1;
-
+        for (int i=0; i < size; i++){
+            array[i] = tempArray[i];
         }
-        return arrayList;
     }
 
-    public Person[] getArray() {
+    //(Person p) -> p.getFirstName().equals(element to search))&&
+
+    @Override
+    public Repository<T> searchBy(Predicate<T> condition){
+        Repository<T> repository = new Repository<>();
+        for (T person: arrayOverwrite(array)){
+            if (condition.test(person)){
+                repository.add(person);
+            }
+        }
+        return repository;
+    }
+
+    public T [] getArray() {
         return array;
     }
 
-    public void setArray(Person[] array) {
+    public void setArray(T [] array) {
         this.array = array;
     }
 }

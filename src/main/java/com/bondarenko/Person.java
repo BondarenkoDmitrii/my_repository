@@ -1,110 +1,159 @@
 package com.bondarenko;
 
-import java.util.Objects;
+import ru.vsu.lab.entities.IDivision;
+import ru.vsu.lab.entities.IPerson;
+import ru.vsu.lab.entities.enums.Gender;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.Objects;
 
-import org.joda.time.LocalDate;
-import org.joda.time.Years;
+public class Person implements IPerson {
 
-public class Person {
+    private String firstName;
+    private String lastName;
+    private LocalDate birthdate;
+    private Integer age;
+    private Gender gender;
+    private IDivision division;
 
-    private String fio;
-    private LocalDate birthday;
-    private int age;
-    private Sex sex;
-    private int id;
 
-    public Person(String fio, String birthday, Sex sex) {
-        this.fio = fio;
-        this.birthday = LocalDate.parse(birthday);
-        this.age = Years.yearsBetween(this.birthday, LocalDate.now()).getYears();
-        this.sex = sex;
-        this.id = Math.abs(hashCode());
+    private BigDecimal salary;
+    private Integer id;
+
+    public Person() {
     }
 
-    public Person(String fio, String birthday, int age, Sex sex, int id) {
-        this.fio = fio;
-        this.birthday = LocalDate.parse(birthday);
-        this.age = age;
-        this.sex = sex;
+    //    конструктор для создания
+    public Person(String firstName, LocalDate birthdate, Gender gender, Division division, BigDecimal salary, Integer id) {
+        this.firstName = firstName;
+        this.lastName = firstName;
+        this.birthdate = birthdate;
+        this.age = Math.toIntExact(ChronoUnit.YEARS.between(birthdate, LocalDate.now()));
+        this.gender = gender;
+        this.division = division;
+        this.salary = salary;
         this.id = id;
     }
 
-    public static Comparator<Person> FioComparator = Comparator.comparing(Person::getFio);
+//    конструктор для сравнения
+    public Person(String firstName, String birthdate, int age, Gender gender, int id) {
+        this.firstName = firstName;
+        this.birthdate = LocalDate.parse(birthdate);
+        this.age = age;
+        this.gender = gender;
+        this.id = id;
+    }
 
-    public static Comparator<Person> BirthdayComparator = Comparator.comparing(Person::getBirthday);
+    public static Comparator<Person> FirstNameComparator = Comparator.comparing(Person::getFirstName);
+
+    public static Comparator<Person> LastNameComparator = Comparator.comparing(Person::getFirstName);
+
+    public static Comparator<Person> BirthdateComparator = Comparator.comparing(Person::getBirthdate);
 
     public static Comparator<Person> AgeComparator = Comparator.comparingInt(Person::getAge);
 
-    public static Comparator<Person> SexComparator = Comparator.comparing(Person::getSex);
+    public static Comparator<Person> GenderComparator = Comparator.comparing(Person::getGender);
+
+    public static Comparator<Person> DivisionComparator = Comparator.comparing(Person::getGender);
+
+    public static Comparator<Person> SalaryComparator = Comparator.comparing(Person::getGender);
 
     public static Comparator<Person> IdComparator = Comparator.comparingInt(Person::getId);
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public IDivision getDivision() {
+        return division;
+    }
+
+    public void setDivision(IDivision division){
+        this.division = division;
+    }
+
+    public BigDecimal getSalary() {
+        return salary;
+    }
+
+    public void setSalary(BigDecimal salary) {
+        this.salary = salary;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "[" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", birthdate=" + birthdate +
+                ", age=" + age +
+                ", gender=" + gender +
+                ", division=" + division.getName() +
+                ", salary=" + salary +
+                ", id=" + id +
+                ']';
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Person person = (Person) o;
-        return id == person.id &&
-                Objects.equals(fio, person.fio) &&
-                Objects.equals(birthday, person.birthday) &&
+        return Objects.equals(firstName, person.firstName) &&
+                Objects.equals(lastName, person.lastName) &&
+                Objects.equals(birthdate, person.birthdate) &&
                 Objects.equals(age, person.age) &&
-                sex == person.sex;
+                gender == person.gender &&
+                Objects.equals(division, person.division) &&
+                Objects.equals(salary, person.salary) &&
+                Objects.equals(id, person.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fio, birthday, age, sex);
-    }
-
-    @Override
-    public String toString() {
-        return "{" +
-                "fio: " + fio +
-                ", birthday: " + birthday +
-                ", age: " + age +
-                ", sex: " + sex +
-                ", id: " + id +
-                '}';
-    }
-
-    public String getFio() {
-        return fio;
-    }
-
-    public void setFio(String fio) {
-        this.fio = fio;
-    }
-
-    public LocalDate getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(LocalDate birthday) {
-        this.birthday = birthday;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public Sex getSex() {
-        return sex;
-    }
-
-    public void setSex(Sex sex) {
-        this.sex = sex;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+        return Objects.hash(firstName, lastName, birthdate, age, gender, division, salary);
     }
 }
